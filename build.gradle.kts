@@ -1,17 +1,19 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    //Plugin.yml create plugins
     id("net.minecrell.plugin-yml.bukkit") version "0.5.3"
+    //A plugin that reobfuscate the NMS code
     id("io.typecraft.gradlesource.spigot") version "1.0.0"
+    //The running environment used to test the plugin
     id("xyz.jpenilla.run-paper") version "2.0.1"
 }
 
 group = "com.github.coolloong"
 version = "1.0.0-SNAPSHOT"
-val artifact = "SpigotExamplePlugin"
+val minecraftVersion = "1.19.4"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -20,13 +22,19 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://hub.spigotmc.org/nexus/content/repositories/public/")
 }
 
 dependencies {
     //without NMS
     //compileOnly("org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT")
-    //use NMS
+
+    /*
+    use NMS,You need to build the local dependency with BuildTools.jar
+    Download from https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    Run: java -jar BuildTools.jar --rev 1.19.4 --remapped
+    */
     compileOnly("org.spigotmc:spigot:1.19.4-R0.1-SNAPSHOT:remapped-mojang")
 
     implementation("org.jetbrains:annotations:21.0.0")
@@ -38,30 +46,9 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:1.18.22")
 }
 
-tasks{
-    shadowJar{
-        archiveClassifier.set("")
-        mergeServiceFiles()
-    }
-
-    jar{
-        manifest {
-            attributes["Main-Class"] = "com.github.coolloong.ExamplePlugin"
-        }
-    }
-
-    build{
-        dependsOn("shadowJar")
-    }
-
-    runServer {
-        minecraftVersion("1.19.4")
-    }
-}
-
 bukkit {
     name = "SpigotExamplePlugin"
-    version = "1.0"
+    version = project.version.toString().split("-")[0]
     description = "This is a example plugin"
     website = "https://github.com/CoolLoong"
     author = "CoolLoong"
@@ -102,7 +89,23 @@ bukkit {
     }*/
 }
 
+tasks {
+    shadowJar {
+        archiveClassifier.set("")
+        mergeServiceFiles()
+    }
+    build {
+        dependsOn("shadowJar")
+    }
+    runServer {
+        minecraftVersion(minecraftVersion)
+    }
+    jar {
+        enabled = false
+    }
+}
+
 spigotRemap {
-    spigotVersion.set("1.19.4")
+    spigotVersion.set(minecraftVersion)
     sourceJarTask.set(tasks.shadowJar) // or `tasks.shadowJar` if you use Shadow plugin.
 }
