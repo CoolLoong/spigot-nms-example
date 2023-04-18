@@ -105,5 +105,5 @@ tasks {
 
 spigotRemap {
     spigotVersion.set(minecraftVersion)
-    sourceJarTask.set(tasks.shadowJar) // or `tasks.shadowJar` if you use Shadow plugin.
+    sourceJarTask.set(tasks.shadowJar)
 }
